@@ -281,8 +281,8 @@
             <div data-v-1d580398="" class="row text">
                 <span data-v-1d580398="" class="title">
                     <div data-v-1d580398="" class="price-wrapper glow">
-                        $ 400
-                    </div> BIWEEKLY CODE <span class="glow">Jumpinghandyman</span> Leaderboard!
+                        $ 1,000
+                    </div> MONTHLY CODE <span class="glow">Jumpinghandyman</span> Leaderboard!
                 </span>
                 <span data-v-1d580398="" class="subtitle" style="color: #FFF;">Every <b>BET</b> on Rainbet under Code
                     <b>Jumpinghandyman</b>
@@ -444,28 +444,38 @@
 <script src="/js/particles.js"></script>
 <script src="/js/toast.js"></script>
 <script>
-const CURRENT_API_URL = 'https://jumpinghandymandata.onrender.com/leaderboard/top14';
-const PREVIOUS_API_URL = 'https://jumpinghandymandata.onrender.com/leaderboard/prev';
+const CURRENT_API_URL = 'https://jumpinghandymandata.vercel.app/leaderboard/top14';
+const PREVIOUS_API_URL = 'https://jumpinghandymandata.vercel.app/leaderboard/prev';
 const roobetLogo = '/assets/rainbetlogo.png';
-const rewards = [100, 200, 50, 25, 15];
+const rewards = [250, 400, 150, 75, 50, 25, 20, 15, 10, 5];
 const top3Glows = ['0 0 40px #C0C0C0', '0 0 40px #FFD700', '0 0 40px #CD7F32'];
+
+function getCurrentCycleEndDateUTC(now = new Date()) {
+  // Use UTC date parts for exactness
+  let year = now.getUTCFullYear();
+  let month0 = now.getUTCMonth();
+  let startMonth0, startYear;
+
+  if (now.getUTCDate() >= 11) {
+    startMonth0 = month0;
+    startYear = year;
+  } else {
+    startMonth0 = (month0 + 11) % 12;
+    startYear = startMonth0 === 11 ? year - 1 : year;
+  }
+  // End of current cycle is 10th 23:59:59 of next month
+  const endMonth0 = (startMonth0 + 1) % 12;
+  const endYear = endMonth0 === 0 ? startYear + 1 : startYear;
+  // 10th 23:59:59 UTC
+  return new Date(Date.UTC(endYear, endMonth0, 10, 23, 59, 59));
+}
 
 function updateCountdown() {
   const el = document.getElementById("countdown");
   const now = new Date();
 
-  // Work in UTC to avoid timezone issues
-  const cycleStartUTC = Date.UTC(2025, 6, 14, 0, 0, 0); // July 14 00:00 UTC
-  const cycleLength = 15 * 24 * 60 * 60 * 1000; // 15 days in ms
-
-  // How many full cycles passed since start
-  const cyclesPassed = Math.floor((now.getTime() - cycleStartUTC) / cycleLength);
-
-  // Current cycle start & end in UTC
-  const startUTC = cycleStartUTC + cyclesPassed * cycleLength;
-  const endUTC = startUTC + cycleLength - 1000; // inclusive end 23:59:59 UTC
-
-  const diff = endUTC - now.getTime();
+  const cycleEnd = getCurrentCycleEndDateUTC(now);
+  const diff = cycleEnd.getTime() - now.getTime();
 
   if (diff <= 0) {
     el.textContent = "Ended";
@@ -482,9 +492,6 @@ function updateCountdown() {
 
 setInterval(updateCountdown, 1000);
 updateCountdown();
-
-
-
 
 async function loadLeaderboard(apiURL = CURRENT_API_URL) {
   const res = await fetch(apiURL);
